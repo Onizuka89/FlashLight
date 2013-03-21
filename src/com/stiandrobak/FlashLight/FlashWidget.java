@@ -4,6 +4,7 @@ import android.appwidget.AppWidgetManager;
 import android.content.Context;
 import android.appwidget.AppWidgetProvider;
 import android.content.pm.PackageManager;
+import android.hardware.Camera;
 import android.util.Log;
 import android.widget.RemoteViews;
 import android.app.PendingIntent;
@@ -11,12 +12,20 @@ import android.content.Intent;
 
 /**
  * Created with IntelliJ IDEA.
- * User: stiansd
+ * Author: Stian Drøbak
  * Date: 01.03.13
  * Time: 12:16
- * To change this template use File | Settings | File Templates.
  */
+
+
 public class FlashWidget extends AppWidgetProvider{
+
+    private static Camera camera;
+
+    static {
+        camera = Camera.open();
+    }
+
     public static String ACTION_WIDGET_RECEIVER = "ActionReceiverWidget";
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager,int[] appWidgetIds){
@@ -27,6 +36,7 @@ public class FlashWidget extends AppWidgetProvider{
         PendingIntent actionPendingIntent = PendingIntent.getBroadcast(context,0,active,0);
         remoteViews.setOnClickPendingIntent(R.id.flashbutton,actionPendingIntent);
         appWidgetManager.updateAppWidget(appWidgetIds,remoteViews);
+
     }
 
 
@@ -34,11 +44,25 @@ public class FlashWidget extends AppWidgetProvider{
     public void onReceive(Context context,Intent intent){
         if(intent.getAction().equals(ACTION_WIDGET_RECEIVER)){
             if(context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH)){
-                HelloActivity.toggleValue();
+                FlashWidget.toggleValue();
             }
         }else{
             Log.d(null,"By Demons I am awesome!");
         }
         super.onReceive(context,intent);
+    }
+
+
+    public static void toggleValue(){
+        Camera.Parameters p = camera.getParameters();
+        if(!p.getFlashMode().equals(Camera.Parameters.FLASH_MODE_TORCH)){
+            p.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
+            camera.setParameters(p);
+            camera.startPreview();
+        }else{
+            p.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
+            camera.setParameters(p);
+            camera.stopPreview();
+        }
     }
 }
