@@ -22,10 +22,6 @@ public class FlashWidget extends AppWidgetProvider{
 
     private static Camera camera;
 
-    static {
-        camera = Camera.open();
-    }
-
     public static String ACTION_WIDGET_RECEIVER = "ActionReceiverWidget";
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager,int[] appWidgetIds){
@@ -54,6 +50,9 @@ public class FlashWidget extends AppWidgetProvider{
 
 
     public static void toggleValue(){
+        if(camera == null){
+            camera = Camera.open();
+        }
         Camera.Parameters p = camera.getParameters();
         if(!p.getFlashMode().equals(Camera.Parameters.FLASH_MODE_TORCH)){
             p.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
@@ -63,6 +62,8 @@ public class FlashWidget extends AppWidgetProvider{
             p.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
             camera.setParameters(p);
             camera.stopPreview();
+            camera.release();
+            camera = null;
         }
     }
 }
